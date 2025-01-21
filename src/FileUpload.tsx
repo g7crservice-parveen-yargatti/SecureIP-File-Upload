@@ -60,23 +60,10 @@ const FileUpload = () => {
     increaseExpiration: boolean = false
   ) => {
     try {
-      const uploadSpeedInBps = (uploadSpeedInMbps * 1e6) / 8;
       const estimatedUploadTimeInSeconds = fileSizeInBytes / uploadSpeedInMbps;
       const bufferInSeconds = estimatedUploadTimeInSeconds * 0.1;
       const totalExpirationTimeInSeconds =
         estimatedUploadTimeInSeconds + bufferInSeconds;
-      console.log(
-        totalExpirationTimeInSeconds,
-        "totalExpirationTimeInSeconds",
-        estimatedUploadTimeInSeconds,
-        "estimatedUploadTimeInSeconds",
-        bufferInSeconds,
-        "bufferInSeconds",
-        uploadSpeedInBps,
-        "uploadSpeedInBps",
-        fileSizeInBytes,
-        "fileSizeInBytes"
-      );
 
       let totalExpirationTimeInMinutes = totalExpirationTimeInSeconds / 60;
       if (increaseExpiration) {
@@ -107,52 +94,20 @@ const FileUpload = () => {
     }
   };
 
-  // const getInternetSpeed = () => {
-  //   return new Promise((resolve, reject) => {
-  //     if (navigator.connection) {
-  //       const { downlink, effectiveType } = navigator.connection;
-  //       console.log(`Connection type: ${effectiveType}`);
-  //       console.log(`Estimated uploading  speed: ${downlink} Mbps`);
-  //       resolve(downlink);
-  //     } else {
-  //       console.log(
-  //         "Network Information API is not supported in this browser."
-  //       );
-  //       reject("Network Information API is not supported in this browser.");
-  //     }
-  //   });
-  // };
-
-  const getInternetSpeed = async () => {
-    const fileSizeInBytes = 1 * 1024 * 1024;
-    const fileContent = new Blob(["a".repeat(fileSizeInBytes)]);
-
-    try {
-      const startTime = Date.now();
-
-      const response = await fetch("https://your-server.com/upload-test", {
-        method: "POST",
-        body: fileContent,
-      });
-
-      if (response.ok) {
-        const endTime = Date.now();
-        const timeTakenInSeconds = (endTime - startTime) / 1000;
-
-        const uploadSpeedInMbps =
-          (fileSizeInBytes * 8) / (timeTakenInSeconds * 1e6);
-        console.log(`Upload speed: ${uploadSpeedInMbps.toFixed(2)} Mbps`);
-
-        console.log(uploadSpeedInMbps, "uploadSpeedInMbps");
-
-        return uploadSpeedInMbps;
+  const getInternetSpeed = () => {
+    return new Promise((resolve, reject) => {
+      if (navigator.connection) {
+        const { downlink, effectiveType } = navigator.connection;
+        console.log(`Connection type: ${effectiveType}`);
+        console.log(`Estimated uploading  speed: ${downlink} Mbps`);
+        resolve(downlink);
       } else {
-        throw new Error("Upload test failed");
+        console.log(
+          "Network Information API is not supported in this browser."
+        );
+        reject("Network Information API is not supported in this browser.");
       }
-    } catch (error) {
-      console.error("Error measuring upload speed:", error);
-      return null;
-    }
+    });
   };
 
   const extractSIPFromURL = (sasUrl: string): string | null => {
@@ -261,8 +216,7 @@ const FileUpload = () => {
       if (!ipRange) {
         throw new Error("Could not retrieve user IP address");
       }
-      // eslint-disable-next-line no-debugger
-      debugger;
+
       const checkSpeed = await getInternetSpeed();
       const sasUrl = await generateSasToken(
         file.name,
